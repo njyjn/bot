@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+pycodestyle = "*"
+
+[packages]
+aiohttp = "*"
+cchardet = "*"
+aiodns = "*"
+aiohttp-devtools = "*"
+uvloop = "*"
+aioredis = "*"
+sqlalchemy = "*"
+aiopg = "*"
+gunicorn = "*"
+
+[requires]
+python_version = "3.7"
