@@ -146,7 +146,8 @@ async def init_db(app):
 
 async def stop_db(app):
     # Initiate Postgres Engine for database tasks
-    await app['db'].close()
+    app['db'].close()
+    await app['db'].wait_closed()
     logging.info('Database engine stopped')
 
 
@@ -174,7 +175,8 @@ async def init_client(app):
 
 async def stop_client(app):
     # Stop client for outbound requests
-    await app['client_session'].close()
+    app['client_session'].close()
+    await app['client_session'].wait_closed()
     logging.info('Client session stopped')
 
 
@@ -186,6 +188,11 @@ async def init_background(app):
 async def stop_background(app):
     # Stop all background tasks
     await stop_background_tasks(app)
+
+
+async def stop_app(app):
+    loop = asyncio.get_event_loop()
+    await shutdown(loop)
 
 
 async def ping(app):
@@ -218,6 +225,7 @@ async def create_app():
     app.on_cleanup.append(stop_client)
     app.on_cleanup.append(stop_db)
     app.on_cleanup.append(stop_background)
+    app.on_shutdown.append(stop_app)
 
     views = web.Application()
     views.add_routes(view_routes)
