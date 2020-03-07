@@ -17,6 +17,8 @@ aioredis = "*"
 sqlalchemy = "*"
 aiopg = "*"
 gunicorn = "*"
+sqlalchemy-utils = "*"
+aiohttp-jinja2 = "*"
 
 [requires]
 python_version = "3.7"

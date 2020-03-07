@@ -1,14 +1,17 @@
+import aiohttp_jinja2
 import asyncio
 import json
 import sys
 from aiohttp import web
-from client import init_client, post, get, create_client_session
+from client import start_client, post, get
 from config import logging, TOKEN, set_default_logging_config, PING_INTERVAL
 from exception import shutdown, handle_exception
+from jinja2 import FileSystemLoader
+from models import Database
 from redis import publish, close, send
-from responses import process_input
+from responder import process_input
 from telegram import assemble_uri
-from views import view_routes
+from views import view_routes, VIEWS_URL_PREFIX
 
 routes = web.RouteTableDef()
 
@@ -202,13 +205,21 @@ async def create_app():
     app = web.Application(middlewares=[error_middleware])
 
     app.add_routes(routes)
-    app.on_startup.append(on_startup)
-    app.on_shutdown.append(on_shutdown)
+    app.on_startup.append(init_redis)
+    app.on_startup.append(init_client)
+    app.on_startup.append(init_db)
+    app.on_cleanup.append(stop_redis)
+    app.on_cleanup.append(stop_client)
+    app.on_cleanup.append(stop_db)
+    app.on_cleanup.append(stop_background)
 
-    views = web.Application(middlewares=[error_middleware])
+    views = web.Application()
     views.add_routes(view_routes)
-
-    app.add_subapp('/admin', views)
+    aiohttp_jinja2.setup(views, loader=FileSystemLoader('./templates'))
+    views.on_startup.append(init_client)
+    views.on_startup.append(init_db)
+    views.on_cleanup.append(stop_client)
+    app.add_subapp(VIEWS_URL_PREFIX, views)
 
     set_default_logging_config()
 

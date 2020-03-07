@@ -5,8 +5,9 @@ import uvloop
 from config import logging, set_default_logging_config
 
 
-def init_client():
+async def start_client():
     set_default_logging_config()
+    return await create_client_session()
 
 
 async def create_client_session():

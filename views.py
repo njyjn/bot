@@ -1,4 +1,12 @@
+import aiohttp_jinja2
+import json
 from aiohttp import web
+from client import post, get
+from config import TOKEN
+from models import Database
+from telegram import assemble_uri, assemble_webhook_uri
+
+VIEWS_URL_PREFIX = '/admin'
 
 view_routes = web.RouteTableDef()
 
@@ -8,25 +16,45 @@ async def hello(request):
     return web.Response(text="Hello World")
 
 
-@view_routes.get('/{name}')
-async def return_name(request):
-    response = {
-        'name': request.match_info['name']
-    }
-    return web.json_response(
-        response,
-        status=200,
-        content_type='application/json'
-    )
-
-
 @view_routes.get('/users')
+@aiohttp_jinja2.template('users.html')
 async def get_registered_users(request):
+    db = request.app['db']
+    users = await db.get_all()
     response = {
-        'name': request.match_info['name']
+        'count': len(users),
+        'users': users
     }
-    return web.json_response(
-        response,
-        status=200,
-        content_type='application/json'
+    return response
+
+
+@view_routes.get('/webhooks', name='get_webhooks')
+@aiohttp_jinja2.template('forms/webhooks.html')
+async def get_webhooks(request):
+    client_session = request.app['client_session']
+    client_response = await get(
+        assemble_uri(TOKEN, 'getWebhookInfo'),
+        session=client_session
     )
+    response = {
+        'current_webhook': client_response['result']['url']
+    }
+    return response
+
+
+@view_routes.post('/webhooks')
+async def post_webhooks(request):
+    data = await request.post()
+    new_webhook = assemble_webhook_uri(data['webhook'], TOKEN)
+    client_session = request.app['client_session']
+    client_response = await get(
+        assemble_uri(TOKEN, 'setWebhook'),
+        {
+            'url': new_webhook,
+            'allowed_updates': json.dumps(['message'])
+        },
+        client_session
+    )
+    location = request.app.router['get_webhooks'].url_for()
+    raise web.HTTPFound(location=location)
+    return {}

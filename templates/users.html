@@ -1,0 +1,25 @@
+<head>
+  <title>Bot Admin</title>
+</head>
+<body>
+  <h1>Users</h1>
+  There are {{ count }} registered users in the bot system
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Username</th>
+      <th>Chat ID</th>
+      <th>Role</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+      <td>{{user.id}}</td>
+      <td>{{user.name}}</td>
+      <td>{{user.username}}</td>
+      <td>{{user.chat_id}}</td>
+      <td>{{user.role}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>

@@ -1,0 +1,12 @@
+<head>
+  <title>Bot Admin</title>
+</head>
+<body>
+  <h1>Set Bot Webhook</h1>
+  <p>Current Webhook: <a href={{current_webhook}}>{{current_webhook}}</a></p>
+  <form action="/admin/webhooks" method="post" accept-charset="utf-8" enctype="application/x-www-form-urlencoded">
+  <label for="webhook">New Webhook</label>
+  <input id="webhook" name="webhook" value=""/>
+  <input type="submit" value="Set webhook"/>
+  </form>
+</body>
