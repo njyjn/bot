@@ -123,12 +123,12 @@ async def _send_message(id, message, client_session=None):
 async def error_middleware(request, handler):
     try:
         response = await handler(request)
-        if response.status == 200:
+        if response.status == 200 or response.status == 302:
             return response
         message = response.message
         status_code = response.status_code
     except web.HTTPException as ex:
-        if ex.status == 200:
+        if ex.status == 200 or ex.status == 302:
             raise
         message = ex.reason
         status_code = ex.status
