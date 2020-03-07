@@ -146,8 +146,7 @@ async def init_db(app):
 
 async def stop_db(app):
     # Initiate Postgres Engine for database tasks
-    app['db'].close()
-    await app['db'].wait_closed()
+    await app['db'].close()
     logging.info('Database engine stopped')
 
 
@@ -233,6 +232,7 @@ async def create_app():
     views.on_startup.append(init_client)
     views.on_startup.append(init_db)
     views.on_cleanup.append(stop_client)
+    views.on_cleanup.append(stop_db)
     app.add_subapp(VIEWS_URL_PREFIX, views)
 
     set_default_logging_config()

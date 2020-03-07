@@ -34,6 +34,10 @@ class User:
         await _create_table(self.engine)
         return self
 
+    async def close(self):
+        self.engine.close()
+        await self.engine.wait_closed()
+
     async def insert(self, **kwargs):
         async with self.engine.acquire() as conn:
             await conn.execute(users.insert().values(kwargs))
