@@ -3,7 +3,7 @@ import json
 from aiohttp import web
 from client import post, get
 from config import TOKEN
-from models import Database
+from models.user import User
 from telegram import assemble_uri, assemble_webhook_uri
 
 VIEWS_URL_PREFIX = '/admin'

@@ -7,7 +7,7 @@ from client import start_client, post, get
 from config import logging, TOKEN, set_default_logging_config, PING_INTERVAL
 from exception import shutdown, handle_exception
 from jinja2 import FileSystemLoader
-from models import Database
+from models.user import User
 from redis import publish, close, send
 from responder import process_input
 from telegram import assemble_uri
@@ -140,7 +140,7 @@ async def error_middleware(request, handler):
 
 async def init_db(app):
     # Initiate Postgres Engine for database tasks
-    app['db'] = await Database.start_engine()
+    app['db'] = await User.start_engine()
     logging.info('Database engine started')
 
 
