@@ -1,11 +1,13 @@
 import aioredis
+from config import REDIS_HOST
 from datetime import datetime
 
 CHAN = 'channel:1'
+REDIS_URI = f'redis://{REDIS_HOST}'
 
 
 async def subscribe():
-    redis = await aioredis.create_redis_pool('redis://localhost')
+    redis = await aioredis.create_redis_pool(REDIS_URI)
     msg = "Successfully created redis connection pool for subscriber"
     res = await redis.subscribe(CHAN)
     ch1 = res[0]
@@ -14,7 +16,7 @@ async def subscribe():
 
 
 async def publish():
-    redis = await aioredis.create_redis_pool('redis://localhost')
+    redis = await aioredis.create_redis_pool(REDIS_URI)
     msg = "Successfully created redis connection pool for publisher"
     return redis, msg
 
