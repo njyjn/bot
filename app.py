@@ -220,6 +220,7 @@ async def create_app():
     app.on_startup.append(init_redis)
     app.on_startup.append(init_client)
     app.on_startup.append(init_db)
+    app.on_startup.append(init_background)
     app.on_cleanup.append(stop_redis)
     app.on_cleanup.append(stop_client)
     app.on_cleanup.append(stop_db)
