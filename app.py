@@ -21,15 +21,21 @@ async def receive_from_webhook(request):
     if request.match_info['token'] != TOKEN:
         raise web.HTTPUnauthorized()
     payload = await request.json()
-    username = payload['message']['from']['username']
-    id = payload['message']['from']['id']
-    message = payload['message']['text']
+    params = request.query
 
     # Log message in pubsub queue
+    username = payload['message']['from']['username']
+    id = payload['message']['from']['id']
+    message = (
+        payload['message'].get('text') or
+        payload['message'].get('sticker')['emoji']
+    )
     pool = request.app['publisher']
     await send(pool, f"{username} ({id}): {message}")
 
-    will_reply = process_input(message)
+    # Process message
+    db = request.app['db']
+    will_reply = await process_input(db, payload, params)
     if will_reply:
         client_session = request.app['client_session']
         await _send_message(id, will_reply, client_session)
