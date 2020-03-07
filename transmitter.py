@@ -55,7 +55,7 @@ async def main():
         await run(client_session)
     except Exception:
         print(sys.exc_info())
-        client_session.close()
+        await client_session.close()
         SystemError()
 
 

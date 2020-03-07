@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+
 async def shutdown(loop, signal=None):
     if signal:
         logging.info(f'Received exit signal {signal.name}')
@@ -16,4 +17,4 @@ def handle_exception(loop, context):
     msg = context.get("exception", context["message"])
     logging.error(f"Caught exception: {msg}")
     logging.info("Shutting down...")
-    asyncio.create_task(shutdown(loop))
+    loop.run_until_complete(shutdown(loop))

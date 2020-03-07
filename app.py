@@ -129,35 +129,54 @@ async def error_middleware(request, handler):
     }, status=status_code)
 
 
-async def on_startup(app):
+async def init_db(app):
+    # Initiate Postgres Engine for database tasks
+    app['db'] = await Database.start_engine()
+    logging.info('Database engine started')
+
+
+async def stop_db(app):
+    # Initiate Postgres Engine for database tasks
+    await app['db'].close()
+    logging.info('Database engine stopped')
+
+
+async def init_redis(app):
     # Initiate pubsub redis server connection pool
     publisher, msg = await publish()
     app['publisher'] = publisher
     await send(publisher, "Server started. You made it")
     logging.info(msg)
 
-    # Initiate client for outbound requests
-    init_client()
-    app['client_session'] = await create_client_session()
-    logging.info('Client session created')
 
-    # Start all background tasks
-    await start_background_tasks(app)
-
-
-async def on_shutdown(app):
-    # Stop all background tasks
-    await stop_background_tasks(app)
-
-    # Stop client for outbound requests
-    await app['client_session'].close()
-    logging.info('Client session stopped')
-
+async def stop_redis(app):
     # Stop pubsub redis server connection pool
     publisher = app['publisher']
     await send(publisher, f"Godspeed!")
     msg = await close(publisher)
     logging.info(msg)
+
+
+async def init_client(app):
+    # Initiate client for outbound requests
+    app['client_session'] = await start_client()
+    logging.info('Client session created')
+
+
+async def stop_client(app):
+    # Stop client for outbound requests
+    await app['client_session'].close()
+    logging.info('Client session stopped')
+
+
+async def init_background(app):
+    # Start all background tasks
+    await start_background_tasks(app)
+
+
+async def stop_background(app):
+    # Stop all background tasks
+    await stop_background_tasks(app)
 
 
 async def ping(app):

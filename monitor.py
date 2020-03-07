@@ -31,7 +31,8 @@ if __name__ == '__main__':
     try:
         loop.create_task(redis.read(ch1))
         loop.run_forever()
-    finally:
+    except Exception:
         logging.info(loop.run_until_complete(redis.unsubscribe(r)))
         loop.close()
+    finally:
         logging.info("Successfully shutdown the Monitor")
