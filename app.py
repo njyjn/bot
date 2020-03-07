@@ -94,10 +94,10 @@ async def set_webhook(request):
 async def send_message(request):
     try:
         payload = await request.json()
-        chat_id = payload['chat_id']
+        id = payload['id']
         message = payload['message']
         client_session = request.app['client_session']
-        response = await _send_message(chat_id, message, client_session)
+        response = await _send_message(id, message, client_session)
         return web.json_response(
             response,
             content_type='application/json'
@@ -107,11 +107,11 @@ async def send_message(request):
         raise web.HTTPUnprocessableEntity()
 
 
-async def _send_message(chat_id, message, client_session=None):
+async def _send_message(id, message, client_session=None):
     response = await get(
         assemble_uri(TOKEN, 'sendMessage'),
         {
-            'chat_id': chat_id,
+            'chat_id': id,
             'text': message
         },
         client_session
