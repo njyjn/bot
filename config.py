@@ -18,4 +18,5 @@ def set_default_logging_config():
 
 
 def database_uri():
-    return f'postgres://{DATABASE_USERNAME}@{DATABASE_HOST}/{DATABASE_NAME}'
+    return f'postgres://{DATABASE_USERNAME}:{DATABASE_PASSWORD}\
+@{DATABASE_HOST}/{DATABASE_NAME}'
