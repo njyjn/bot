@@ -27,8 +27,7 @@ async def read(channel):
 
 
 async def send(redis, message):
-    res = await redis.publish(CHAN, message)
-    assert res == 1
+    await redis.publish(CHAN, message)
 
 
 async def unsubscribe(redis):
