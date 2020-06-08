@@ -31,6 +31,7 @@ async def get_registered_users(request):
 
 @view_routes.get('/webhooks', name='get_webhooks')
 @aiohttp_jinja2.template('forms/webhooks.html')
+@bauth.required
 async def get_webhooks(request):
     client_session = request.app['client_session']
     client_response = await get(
@@ -45,6 +46,7 @@ async def get_webhooks(request):
 
 
 @view_routes.post('/webhooks')
+@bauth.required
 async def post_webhooks(request):
     data = await request.post()
     new_webhook = assemble_webhook_uri(data['webhook'], TOKEN)

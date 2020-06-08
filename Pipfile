@@ -19,6 +19,7 @@ aiopg = "*"
 gunicorn = "*"
 sqlalchemy-utils = "*"
 aiohttp-jinja2 = "*"
+aiohttp-basicauth = "*"
 
 [requires]
 python_version = "3.7"

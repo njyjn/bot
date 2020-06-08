@@ -3,6 +3,7 @@ import asyncio
 import json
 import sys
 from aiohttp import web
+from auth import bauth
 from client import start_client, post, get
 from config import logging, TOKEN, set_default_logging_config, PING_INTERVAL
 from exception import shutdown, handle_exception
