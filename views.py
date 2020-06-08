@@ -40,15 +40,17 @@ async def get_webhooks(request):
     )
     response = {
         'current_webhook': client_response['result']['url'],
-        'url_prefix': VIEWS_URL_PREFIX
+        'url_prefix': VIEWS_URL_PREFIX,
+        'csrf_token': TOKEN
     }
     return response
 
 
 @view_routes.post('/webhooks')
-@bauth.required
 async def post_webhooks(request):
     data = await request.post()
+    if data.get('csrf') != TOKEN:
+        raise web.HTTPUnauthorized()
     new_webhook = assemble_webhook_uri(data['webhook'], TOKEN)
     client_session = request.app['client_session']
     client_response = await get(
