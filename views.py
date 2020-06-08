@@ -1,12 +1,13 @@
 import aiohttp_jinja2
 import json
 from aiohttp import web
+from auth import bauth
 from client import post, get
-from config import TOKEN
+from config import TOKEN, HOST_PREFIX
 from models.user import User
 from telegram import assemble_uri, assemble_webhook_uri
 
-VIEWS_URL_PREFIX = '/admin'
+VIEWS_URL_PREFIX = HOST_PREFIX + '/admin'
 
 view_routes = web.RouteTableDef()
 
@@ -37,7 +38,8 @@ async def get_webhooks(request):
         session=client_session
     )
     response = {
-        'current_webhook': client_response['result']['url']
+        'current_webhook': client_response['result']['url'],
+        'url_prefix': VIEWS_URL_PREFIX
     }
     return response
 

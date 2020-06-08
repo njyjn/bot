@@ -8,7 +8,7 @@ DATABASE_USERNAME = os.environ['POSTGRES_USER']
 DATABASE_PASSWORD = os.environ['POSTGRES_PASSWORD']
 REDIS_HOST = os.environ['REDIS_HOST']
 PING_INTERVAL = 300
-
+HOST_PREFIX = os.environ['HOST_PREFIX']
 
 def set_default_logging_config():
     logging.basicConfig(

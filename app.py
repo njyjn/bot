@@ -12,111 +12,7 @@ from redis import publish, close, send
 from responder import process_input
 from telegram import assemble_uri
 from views import view_routes, VIEWS_URL_PREFIX
-
-routes = web.RouteTableDef()
-
-
-@routes.post('/api/v1/bots/updates/{token}')
-async def receive_from_webhook(request):
-    if request.match_info['token'] != TOKEN:
-        raise web.HTTPUnauthorized()
-    payload = await request.json()
-    params = request.query
-
-    # Log message in pubsub queue
-    username = payload['message']['from']['username']
-    id = payload['message']['from']['id']
-    message = (
-        payload['message'].get('text') or
-        payload['message'].get('sticker')['emoji']
-    )
-    pool = request.app['publisher']
-    await send(pool, f"{username} ({id}): {message}")
-
-    # Process message
-    db = request.app['db']
-    will_reply = await process_input(db, payload, params)
-    if will_reply:
-        client_session = request.app['client_session']
-        await _send_message(id, will_reply, client_session)
-
-    response = {
-        'you_are': payload['message']['from']
-    }
-    return web.json_response(
-        response,
-        content_type='application/json'
-    )
-
-
-@routes.get('/api/v1/bots/webhooks')
-async def get_webhook(request):
-    try:
-        client_session = request.app['client_session']
-        response = await get(
-            assemble_uri(TOKEN, 'getWebhookInfo'),
-            session=client_session
-        )
-        return web.json_response(
-            response,
-            content_type='application/json'
-        )
-    except Exception:
-        print(sys.exc_info())
-        raise web.HTTPUnprocessableEntity()
-
-
-@routes.post('/api/v1/bots/webhooks')
-async def set_webhook(request):
-    try:
-        payload = await request.json()
-        url = payload['url']
-        allowed_updates = payload['allowed_updates']
-        client_session = request.app['client_session']
-        response = await get(
-            assemble_uri(TOKEN, 'setWebhook'),
-            {
-                'url': url,
-                'allowed_updates': json.dumps(allowed_updates)
-            },
-            client_session
-        )
-        return web.json_response(
-            response,
-            content_type='application/json'
-        )
-    except Exception:
-        print(sys.exc_info())
-        raise web.HTTPUnprocessableEntity()
-
-
-@routes.post('/api/v1/bots/messages')
-async def send_message(request):
-    try:
-        payload = await request.json()
-        id = payload['id']
-        message = payload['message']
-        client_session = request.app['client_session']
-        response = await _send_message(id, message, client_session)
-        return web.json_response(
-            response,
-            content_type='application/json'
-        )
-    except Exception:
-        print(sys.exc_info())
-        raise web.HTTPUnprocessableEntity()
-
-
-async def _send_message(id, message, client_session=None):
-    response = await get(
-        assemble_uri(TOKEN, 'sendMessage'),
-        {
-            'chat_id': id,
-            'text': message
-        },
-        client_session
-    )
-    return response
+from api_v1 import api_routes, API_URL_PREFIX
 
 
 @web.middleware
@@ -214,18 +110,24 @@ async def stop_background_tasks(app):
 
 
 async def create_app():
-    app = web.Application(middlewares=[error_middleware])
+    app = web.Application(middlewares=[
+        error_middleware,
+        bauth
+    ])
 
-    app.add_routes(routes)
-    app.on_startup.append(init_redis)
-    app.on_startup.append(init_client)
-    app.on_startup.append(init_db)
-    app.on_startup.append(init_background)
-    app.on_cleanup.append(stop_redis)
-    app.on_cleanup.append(stop_client)
-    app.on_cleanup.append(stop_db)
-    app.on_cleanup.append(stop_background)
     app.on_shutdown.append(stop_app)
+
+    api_v1 = web.Application()
+    api_v1.add_routes(api_routes)
+    api_v1.on_startup.append(init_redis)
+    api_v1.on_startup.append(init_client)
+    api_v1.on_startup.append(init_db)
+    api_v1.on_startup.append(init_background)
+    api_v1.on_cleanup.append(stop_redis)
+    api_v1.on_cleanup.append(stop_client)
+    api_v1.on_cleanup.append(stop_db)
+    api_v1.on_cleanup.append(stop_background)
+    app.add_subapp(API_URL_PREFIX, api_v1)
 
     views = web.Application()
     views.add_routes(view_routes)
