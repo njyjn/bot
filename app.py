@@ -19,12 +19,12 @@ from api_v1 import api_routes, API_URL_PREFIX
 async def error_middleware(request, handler):
     try:
         response = await handler(request)
-        if response.status == 200 or response.status == 302:
+        if response.status == 200 or response.status == 302 or response.status == 401:
             return response
         message = response.message
-        status_code = response.status_code
+        status_code = response.status
     except web.HTTPException as ex:
-        if ex.status == 200 or ex.status == 302:
+        if ex.status == 200 or ex.status == 302 or ex.status == 401:
             raise
         message = ex.reason
         status_code = ex.status
